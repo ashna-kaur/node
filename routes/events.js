@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const eventController = require('../controllers/eventController');
+const chatController = require('../controllers/chatController');
 
 // @route   POST api/events
 // @desc    Create a new event
@@ -17,14 +18,6 @@ router.get('/', eventController.getEvents);
 // @desc    Get user's created and attending events
 // @access  Private
 router.get('/dashboard', auth, eventController.getDashboardEvents);
-
-// @route   PUT api/events/:id
-// @desc    Update an event
-// @access  Private
-
-// @route   PUT api/events/:id
-// @desc    Update an event
-// @access  Private
 
 // @route   PUT api/events/:id
 // @desc    Update an event
@@ -45,5 +38,22 @@ router.put('/register/:id', auth, eventController.registerForEvent);
 // @desc    Unregister from an event
 // @access  Private
 router.put('/unregister/:id', auth, eventController.unregisterFromEvent);
+
+// ========== CHAT ROUTES ==========
+
+// @route   GET api/events/:eventId/messages
+// @desc    Get messages for an event chat
+// @access  Private (only participants)
+router.get('/:eventId/messages', auth, chatController.getEventMessages);
+
+// @route   POST api/events/:eventId/messages
+// @desc    Send a message to event chat
+// @access  Private (only participants)
+router.post('/:eventId/messages', auth, chatController.sendMessage);
+
+// @route   PUT api/events/:eventId/messages/read
+// @desc    Mark messages as read
+// @access  Private
+router.put('/:eventId/messages/read', auth, chatController.markMessagesAsRead);
 
 module.exports = router;

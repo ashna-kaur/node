@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const { register, login, verifyEmail } = require('../controllers/authController');
+const { validateRegistration } = require('../middleware/validateInput');
 const passport = require('passport');
 
 // @route   POST api/auth/register
 // @desc    Register user
 // @access  Public
-router.post('/register', register);
+router.post('/register', validateRegistration, register);
 
 // @route   POST api/auth/login
-// @desc    Authenticate user \u0026 get token
+// @desc    Authenticate user & get token
 // @access  Public
 router.post('/login', login);
 
@@ -24,7 +25,7 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) =>{
+  (req, res) => {
     res.redirect('/dashboard'); // Redirect to your dashboard or a success page
   }
 );

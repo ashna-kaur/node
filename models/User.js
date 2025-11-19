@@ -27,7 +27,14 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isBlocked: {
+    type: Boolean,
+    default: false,
+  },
   verificationToken: String,
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
+  googleId: String, // For OAuth
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
