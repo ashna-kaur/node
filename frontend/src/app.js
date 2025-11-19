@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Calendar, MapPin, Users, LogOut, Bell, MessageCircle, Shield, Plus } from 'lucide-react';
-import io from 'socket.io-client';
 
-useEffect(() => {
-  if (user) {
-    const socket = io('http://localhost:3000');
-    
-    socket.on('newNotification', (notification) => {
-      setNotifications(prev => [...prev, notification]);
-    });
-
-    return () => socket.disconnect();
-  }
-}, [user]);
 const EventHubApp = () => {
   const [currentView, setCurrentView] = useState('login');
   const [user, setUser] = useState(null);
