@@ -87,6 +87,13 @@ io.on('connection', (socket) => {
     console.log('Client disconnected:', socket.id);
   });
 });
+const cors = require('cors');
+
+app.use(cors({
+  origin: 'http://localhost:3000', // la porta del frontend
+  credentials: true
+}));
+
 
 // Start the server
 server.listen(PORT, () => {
