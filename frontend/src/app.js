@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Calendar, MapPin, Users, LogOut, Bell, MessageCircle, Shield, Plus } from 'lucide-react';
+import { io } from 'socket.io-client';
 
 const EventHubApp = () => {
   const [currentView, setCurrentView] = useState('login');
@@ -13,6 +14,18 @@ const EventHubApp = () => {
     title: '', description: '', date: '', location: '', capacity: '', category: 'Technology'
   });
   const [messageInput, setMessageInput] = useState('');
+  const [socketInstance, setSocketInstance] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  // Join/leave event rooms dynamically when chat changes
+  useEffect(() => {
+    if (socketInstance && selectedEvent) {
+      socketInstance.emit('joinEvent', selectedEvent._id);
+      return () => {
+        socketInstance.emit('leaveEvent', selectedEvent._id);
+      };
+    }
+  }, [socketInstance, selectedEvent]);
 
   useEffect(() => {
     if (user) {
@@ -56,13 +69,30 @@ const EventHubApp = () => {
 
   const handleLogin = () => {
     if (loginForm.email && loginForm.password) {
-      setUser({ 
-        id: '123', 
+      const generatedId = Date.now().toString();
+      const loggedInUser = {
+        id: generatedId,
         username: loginForm.email.split('@')[0],
         email: loginForm.email,
         role: loginForm.email.includes('admin') ? 'admin' : 'user'
-      });
+      };
+      setUser(loggedInUser);
       setCurrentView('events');
+      const newSocket = io('http://localhost:3000');
+      setSocketInstance(newSocket);
+      newSocket.emit('joinUser', generatedId);
+      newSocket.on('newNotification', (notification) => {
+        setNotifications((prev) => [notification, ...prev]);
+        setUnreadCount((c) => c + 1);
+      });
+      newSocket.on('newMessage', (message) => {
+        setMessages((prev) => {
+          if (selectedEvent && message.event === selectedEvent._id) {
+            return [...prev, message];
+          }
+          return prev;
+        });
+      });
       setLoginForm({ email: '', password: '' });
     }
   };
@@ -71,6 +101,12 @@ const EventHubApp = () => {
     if (registerForm.username && registerForm.email && registerForm.password) {
       alert('Registrazione simulata! Ora puoi fare il login.');
       setCurrentView('login');
+    if (socketInstance) {
+      socketInstance.disconnect();
+      setSocketInstance(null);
+    }
+    setNotifications([]);
+    setUnreadCount(0);
       setRegisterForm({ username: '', email: '', password: '' });
     }
   };
@@ -256,9 +292,16 @@ const EventHubApp = () => {
                 <span>Admin</span>
               </button>
             )}
-            <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+            <button
+              onClick={() => setUnreadCount(0)}
+              className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
+            >
               <Bell className="w-6 h-6" />
-              <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-5 px-1 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
             </button>
             <div className="flex items-center space-x-3 ml-4 pl-4 border-l">
               <div className="text-right">

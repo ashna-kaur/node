@@ -19,7 +19,7 @@ exports.createEvent = async (req, res) => {
       image,
       category,
       creator: req.user.id,
-      status: 'approved' // Change to 'pending' if you want manual approval
+      status: req.user.role === 'admin' ? 'approved' : 'pending'
     });
 
     const event = await newEvent.save();

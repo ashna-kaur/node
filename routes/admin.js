@@ -33,4 +33,14 @@ router.delete('/events/:id', adminController.deleteEvent);
 // @access  Private/Admin
 router.get('/stats', adminController.getDashboardStats);
 
+// @route   PUT /api/admin/events/:id/approve
+// @desc    Approve an event
+// @access  Private/Admin
+router.put('/events/:id/approve', adminController.approveEvent);
+
+// @route   PUT /api/admin/events/:id/reject
+// @desc    Reject an event
+// @access  Private/Admin
+router.put('/events/:id/reject', adminController.rejectEvent);
+
 module.exports = router;
