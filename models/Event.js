@@ -41,9 +41,29 @@ const eventSchema = new mongoose.Schema({
   ],
   category: {
     type: String,
-    enum: ['Music', 'Sports', 'Art', 'Food', 'Technology', 'Other'],
+    enum: ['Music', 'Sports', 'Art', 'Food', 'Technology', 'Business', 'Health', 'Education', 'Other'],
     default: 'Other',
   },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'approved', // Auto-approve by default, can be changed to 'pending'
+  },
+  rejectionReason: {
+    type: String,
+    trim: true,
+  },
+  moderatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  moderatedAt: Date,
 }, { timestamps: true });
+
+// Index for search and filtering
+eventSchema.index({ title: 'text', description: 'text' });
+eventSchema.index({ category: 1 });
+eventSchema.index({ date: 1 });
+eventSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Event', eventSchema);

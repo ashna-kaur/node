@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, verifyEmail } = require('../controllers/authController');
+const { 
+  register, 
+  login, 
+  verifyEmail, 
+  forgotPassword, 
+  resetPassword 
+} = require('../controllers/authController');
 const { validateRegistration } = require('../middleware/validateInput');
 const passport = require('passport');
 
@@ -26,7 +32,7 @@ router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('/dashboard'); // Redirect to your dashboard or a success page
+    res.redirect('/dashboard');
   }
 );
 
@@ -34,5 +40,15 @@ router.get(
 // @desc    Verify user email
 // @access  Public
 router.get('/verify-email/:token', verifyEmail);
+
+// @route   POST api/auth/forgot-password
+// @desc    Request password reset
+// @access  Public
+router.post('/forgot-password', forgotPassword);
+
+// @route   POST api/auth/reset-password/:token
+// @desc    Reset password
+// @access  Public
+router.post('/reset-password/:token', resetPassword);
 
 module.exports = router;

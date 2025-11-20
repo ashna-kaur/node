@@ -1,124 +1,345 @@
+# EventHub API - Documentazione Completa
 
-# EventHub API
+EventHub è una piattaforma completa per la gestione di eventi che permette agli utenti di creare, gestire e partecipare a eventi, con funzionalità di chat in tempo reale e notifiche.
 
-Welcome to the EventHub API documentation! This project provides a RESTful API for managing events, including user authentication and notification handling.
+## 🚀 Funzionalità
 
-## Installation
+### Utenti
+- ✅ Registrazione con verifica email
+- ✅ Login con JWT
+- ✅ Autenticazione Google OAuth 2.0
+- ✅ Recupero password via email
+- ✅ Gestione profilo utente
 
-To set up the project locally, follow these steps:
+### Eventi
+- ✅ Creazione e modifica eventi
+- ✅ Upload immagini eventi (Cloudinary o storage locale)
+- ✅ Iscrizione/Disiscrizione a eventi
+- ✅ Filtri per categoria, data e luogo
+- ✅ Paginazione risultati
+- ✅ Ricerca testuale
 
-1.  Clone the repository:
-    ```bash
-    git clone <REPOSITORY_URL>
-    cd EventHub
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Create a `.env` file in the root directory of the project and configure the following environment variables:
-    ```
-    PORT=3000
-    MONGO_URI=mongodb://localhost:27017/eventhub 
-    JWT_SECRET=f1056f6484c2f79b9344e66033a43973363ad60c266da3aad0fb4576a84b1af8 
-    ```
-    *Replace placeholders with your actual values.*
+### Chat e Notifiche
+- ✅ Chat in tempo reale per ogni evento (Socket.IO)
+- ✅ Notifiche push in tempo reale
+- ✅ Email di conferma iscrizione
+- ✅ Notifiche agli organizzatori
 
-### Google OAuth Configuration
+### Amministrazione
+- ✅ Pannello admin completo
+- ✅ Gestione utenti (blocco/sblocco)
+- ✅ Moderazione eventi (approvazione/rifiuto)
+- ✅ Sistema di segnalazioni
+- ✅ Dashboard con statistiche
 
-To enable Google login, you need to obtain `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from the Google Cloud Console. Follow these steps:
+### Sicurezza
+- ✅ Rate limiting su tutte le API
+- ✅ Helmet per headers sicuri
+- ✅ Validazione input
+- ✅ CORS configurato
+- ✅ Hashing password con bcrypt
 
-1.  **Go to Google Cloud Console:** Visit [console.cloud.google.com](https://console.cloud.google.com/) and log in with your Google account.
-2.  **Create a new project** (if you don't have one).
-3.  **Enable Google People API:** Navigate to "APIs & Services" > "Library", search for "Google People API", and enable it.
-4.  **Configure OAuth Consent Screen:**
-    *   Go to "APIs & Services" > "OAuth consent screen".
-    *   Choose "External" for User Type.
-    *   Fill in the required application information (e.g., Application name: "EventHub", User support email, Developer contact information).
-    *   Save and continue.
-5.  **Create OAuth Client ID:**
-    *   Go to "APIs & Services" > "Credentials".
-    *   Click "Create Credentials" and select "OAuth client ID".
-    *   Choose "Web application" as the Application type.
-    *   Give it a name (e.g., "EventHub Web Client").
-    *   **Authorized JavaScript origins:** Add `http://localhost:3000`
-    *   **Authorized redirect URIs:** Add `http://localhost:3000/api/auth/google/callback`
-    *   Click "Create".
-6.  **Copy Credentials:** Google will provide you with your `Client ID` and `Client Secret`. Copy these values.
-7.  **Update `.env` file:** Paste the copied `Client ID` and `Client Secret` into your `.env` file for `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` respectively.
-8.  **Restart the server** to load the new environment variables.
+## 📋 Requisiti
 
+- Node.js >= 16.x
+- MongoDB >= 5.x (o MongoDB Atlas)
+- npm o yarn
 
-## Project Structure
+## 🛠️ Installazione
+
+### 1. Clona il repository
+```bash
+git clone <REPOSITORY_URL>
+cd EventHub
+```
+
+### 2. Installa le dipendenze
+```bash
+npm install
+```
+
+### 3. Configura le variabili d'ambiente
+Copia il file `.env.example` in `.env` e configura le tue variabili:
+
+```bash
+cp .env.example .env
+```
+
+Modifica `.env` con i tuoi valori:
+```env
+# Server
+PORT=5000
+NODE_ENV=development
+CLIENT_URL=http://localhost:3000
+
+# Database
+MONGO_URI=mongodb://localhost:27017/eventhub
+
+# JWT
+JWT_SECRET=your_super_secret_jwt_key
+JWT_EXPIRES_IN=7d
+
+# Google OAuth (opzionale)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Email (Gmail esempio)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USERNAME=your_email@gmail.com
+EMAIL_PASSWORD=your_app_password
+EMAIL_FROM=noreply@eventhub.com
+
+# Cloudinary (opzionale)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+### 4. Crea le cartelle necessarie
+```bash
+mkdir -p uploads/events
+```
+
+### 5. Avvia il server
+```bash
+# Sviluppo
+npm run dev
+
+# Produzione
+npm start
+```
+
+Il server sarà disponibile su `http://localhost:5000`
+
+## 📚 API Endpoints
+
+### Autenticazione
+
+| Metodo | Endpoint | Descrizione | Accesso |
+|--------|----------|-------------|---------|
+| POST | `/api/auth/register` | Registrazione nuovo utente | Pubblico |
+| POST | `/api/auth/login` | Login utente | Pubblico |
+| GET | `/api/auth/google` | Login con Google | Pubblico |
+| GET | `/api/auth/verify-email/:token` | Verifica email | Pubblico |
+| POST | `/api/auth/forgot-password` | Richiesta reset password | Pubblico |
+| POST | `/api/auth/reset-password/:token` | Reset password | Pubblico |
+
+### Eventi
+
+| Metodo | Endpoint | Descrizione | Accesso |
+|--------|----------|-------------|---------|
+| POST | `/api/events` | Crea nuovo evento | Privato |
+| GET | `/api/events` | Lista eventi pubblici | Pubblico |
+| GET | `/api/events/:id` | Dettaglio evento | Pubblico |
+| GET | `/api/events/dashboard` | Eventi utente | Privato |
+| PUT | `/api/events/:id` | Modifica evento | Privato |
+| DELETE | `/api/events/:id` | Elimina evento | Privato |
+| PUT | `/api/events/register/:id` | Iscriviti a evento | Privato |
+| PUT | `/api/events/unregister/:id` | Disiscrivi da evento | Privato |
+
+### Chat
+
+| Metodo | Endpoint | Descrizione | Accesso |
+|--------|----------|-------------|---------|
+| GET | `/api/events/:eventId/messages` | Messaggi evento | Privato |
+| POST | `/api/events/:eventId/messages` | Invia messaggio | Privato |
+| PUT | `/api/events/:eventId/messages/read` | Segna come letti | Privato |
+
+### Notifiche
+
+| Metodo | Endpoint | Descrizione | Accesso |
+|--------|----------|-------------|---------|
+| GET | `/api/notifications` | Lista notifiche | Privato |
+| PUT | `/api/notifications/:id/read` | Segna come letta | Privato |
+
+### Segnalazioni
+
+| Metodo | Endpoint | Descrizione | Accesso |
+|--------|----------|-------------|---------|
+| POST | `/api/reports` | Crea segnalazione | Privato |
+| GET | `/api/reports/my-reports` | Mie segnalazioni | Privato |
+| GET | `/api/reports` | Tutte le segnalazioni | Admin |
+| PUT | `/api/reports/:id` | Aggiorna segnalazione | Admin |
+| DELETE | `/api/reports/:id` | Elimina segnalazione | Admin |
+
+### Amministrazione
+
+| Metodo | Endpoint | Descrizione | Accesso |
+|--------|----------|-------------|---------|
+| GET | `/api/admin/users` | Lista utenti | Admin |
+| PUT | `/api/admin/users/:id/block` | Blocca/Sblocca utente | Admin |
+| GET | `/api/admin/events` | Tutti gli eventi | Admin |
+| PUT | `/api/admin/events/:id/approve` | Approva evento | Admin |
+| PUT | `/api/admin/events/:id/reject` | Rifiuta evento | Admin |
+| DELETE | `/api/admin/events/:id` | Elimina evento | Admin |
+| GET | `/api/admin/stats` | Statistiche dashboard | Admin |
+
+## 🔐 Autenticazione
+
+L'API utilizza JWT (JSON Web Tokens) per l'autenticazione. Dopo il login, includi il token nell'header delle richieste:
+
+```
+x-auth-token: your_jwt_token_here
+```
+
+## 📸 Upload Immagini
+
+### Opzione 1: Cloudinary (Consigliato)
+Configura le variabili Cloudinary nel `.env` e le immagini saranno caricate automaticamente sul cloud.
+
+### Opzione 2: Storage Locale
+Le immagini saranno salvate nella cartella `uploads/events/`. Assicurati che la cartella abbia i permessi corretti.
+
+## 📧 Configurazione Email
+
+### Gmail
+1. Abilita "App meno sicure" o usa una password per app
+2. Configura nel `.env`:
+```env
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USERNAME=your_email@gmail.com
+EMAIL_PASSWORD=your_app_password
+```
+
+### Altri Provider
+Adatta le configurazioni SMTP nel `.env`.
+
+## 🧪 Testing
+
+```bash
+# Esegui tutti i test
+npm test
+
+# Test con coverage
+npm run test:ci
+```
+
+## 🚀 Deployment
+
+### Render
+1. Crea un nuovo Web Service su Render
+2. Collega il repository GitHub
+3. Configura le variabili d'ambiente
+4. Deploy automatico ad ogni push
+
+### Heroku
+```bash
+heroku create eventhub-api
+heroku config:set MONGO_URI=your_mongodb_uri
+heroku config:set JWT_SECRET=your_secret
+git push heroku main
+```
+
+### Railway
+1. Collega il repository
+2. Configura variabili d'ambiente
+3. Deploy automatico
+
+## 📁 Struttura Progetto
 
 ```
 EventHub/
 ├── config/
+│   ├── cloudinary.js
 │   ├── passport.js
 │   └── swagger.js
 ├── controllers/
+│   ├── adminController.js
 │   ├── authController.js
+│   ├── chatController.js
 │   ├── eventController.js
-│   └── notificationController.js
+│   ├── notificationController.js
+│   └── reportController.js
 ├── middleware/
-│   └── authMiddleware.js
+│   ├── adminMiddleware.js
+│   ├── authMiddleware.js
+│   ├── rateLimiter.js
+│   ├── uploadMiddleware.js
+│   └── validateInput.js
 ├── models/
 │   ├── Event.js
+│   ├── Message.js
 │   ├── Notification.js
+│   ├── Report.js
 │   └── User.js
 ├── routes/
+│   ├── admin.js
 │   ├── auth.js
 │   ├── events.js
-│   └── notifications.js
+│   ├── notifications.js
+│   └── reports.js
+├── tests/
+│   └── auth.test.js
+├── uploads/
+│   └── events/
 ├── utils/
 │   ├── email.js
 │   └── socket.js
-├── .env
-├── README..md
-├── package-lock.json
+├── .env.example
+├── .gitignore
 ├── package.json
+├── Procfile
+├── render.yaml
+├── README.md
 └── server.js
 ```
 
-## Starting the Server
+## 🔧 Tecnologie Utilizzate
 
-To start the server, run the following command:
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB, Mongoose
+- **Autenticazione**: JWT, Passport.js, Google OAuth
+- **Real-time**: Socket.IO
+- **Upload**: Multer, Cloudinary
+- **Email**: Nodemailer
+- **Sicurezza**: Helmet, express-rate-limit, bcryptjs
+- **Documentazione**: Swagger/OpenAPI
+- **Testing**: Jest, Supertest
 
-```bash
-node server.js
-```
+## 🐛 Troubleshooting
 
-The server will be available at `http://localhost:3000`
+### Problema: "Cannot connect to MongoDB"
+**Soluzione**: Verifica che MongoDB sia in esecuzione e che `MONGO_URI` sia corretto.
 
-## API Endpoints
+### Problema: "Email not sending"
+**Soluzione**: Verifica le credenziali email nel `.env` e controlla che l'account permetta app di terze parti.
 
-Below are the available endpoints in the EventHub API.
+### Problema: "File upload failed"
+**Soluzione**: Verifica i permessi della cartella `uploads/` o configura correttamente Cloudinary.
 
-### Authentication Endpoints (`/api/auth`)
+### Problema: "Socket.IO not connecting"
+**Soluzione**: Verifica che il CORS sia configurato correttamente e che il client usi il giusto URL.
 
-| Method | Endpoint                               | Description                                    | Access   |
-| :----- | :------------------------------------- | :--------------------------------------------- | :------- |
-| `POST` | `/api/auth/register`                   | Register a new user                            | Public   |
-| `POST` | `/api/auth/login`                      | Authenticate user and get token                | Public   |
-| `GET`  | `/api/auth/google`                     | Initiate Google authentication process         | Public   |
-| `GET`  | `/api/auth/google/callback`            | Callback for Google authentication             | Public   |
-| `GET`  | `/api/auth/verify-email/:token`        | Verify user email                              | Public   |
+## 📝 TODO Future Features
 
-### Event Endpoints (`/api/events`)
+- [ ] Integrazione calendario (Google Calendar, iCal)
+- [ ] Sistema di pagamento per eventi a pagamento
+- [ ] Mappa interattiva per eventi
+- [ ] Sistema di recensioni eventi
+- [ ] Notifiche push mobile (FCM)
+- [ ] Export eventi in PDF
+- [ ] Multi-lingua (i18n)
 
-| Method | Endpoint                               | Description                                    | Access   |
-| :----- | :------------------------------------- | :--------------------------------------------- | :-------- |
-| `POST` | `/api/events`                          | Create a new event                             | Private  |
-| `GET`  | `/api/events`                          | Get all public events with optional filters    | Public   |
-| `GET`  | `/api/events/dashboard`                | Get user's created and attending events        | Private  |
-| `PUT`  | `/api/events/:id`                      | Update a specific event                        | Private  |
-| `DELETE` | `/api/events/:id`                    | Delete a specific event                        | Private  |
-| `PUT`  | `/api/events/register/:id`             | Register for an event                          | Private  |
-| `PUT`  | `/api/events/unregister/:id`           | Unregister from an event                       | Private  |
+## 🤝 Contributing
 
-### Other Endpoints
+Le pull request sono benvenute! Per modifiche importanti, apri prima un issue per discutere cosa vorresti cambiare.
 
-| Method | Endpoint      | Description                                | Access   |
-| :----- | :------------ | :----------------------------------------- | :------- |
-| `GET`  | `/`           | Welcome page of the API                    | Public   |
-| `GET`  | `/api-docs`   | Swagger UI for API documentation           | Public   |
+## 📄 Licenza
+
+ISC
+
+## 👨‍💻 Autore
+
+Ashna Kaur - [GitHub](https://github.com/ashna-kaur)
+
+## 🙏 Ringraziamenti
+
+- Anthropic per il supporto nello sviluppo
+- Community Node.js
+- Tutti i contributori
+
+---
+
+Per maggiori informazioni, consulta la documentazione API su `/api-docs` dopo il deploy.

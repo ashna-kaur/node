@@ -110,3 +110,52 @@ exports.getDashboardStats = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+// controllers/adminController.js
+exports.approveEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ msg: 'Event not found' });
+    }
+
+    event.status = 'approved';
+    await event.save();
+
+    // Notify creator
+    await createAndEmitNotification(
+      event.creator,
+      `Your event "${event.title}" has been approved`,
+      'event_update'
+    );
+
+    res.json({ msg: 'Event approved', event });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+};
+
+exports.rejectEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ msg: 'Event not found' });
+    }
+
+    event.status = 'rejected';
+    event.rejectionReason = req.body.reason || 'No reason provided';
+    await event.save();
+
+    // Notify creator
+    await createAndEmitNotification(
+      event.creator,
+      `Your event "${event.title}" was rejected: ${event.rejectionReason}`,
+      'event_update'
+    );
+
+    res.json({ msg: 'Event rejected', event });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+};

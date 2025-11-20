@@ -3,16 +3,37 @@ const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const eventController = require('../controllers/eventController');
 const chatController = require('../controllers/chatController');
+const { validateEvent } = require('../middleware/validateInput');
+const { createEventLimiter } = require('../middleware/RateLimiter');
+
+// Import upload middleware (choose one based on your setup)
+// Option 1: Local storage
+// const { upload } = require('../middleware/uploadMiddleware');
+
+// Option 2: Cloudinary
+const { upload } = require('../config/cloudinary');
 
 // @route   POST api/events
 // @desc    Create a new event
 // @access  Private
-router.post('/', auth, eventController.createEvent);
+router.post(
+  '/', 
+  auth, 
+  createEventLimiter,
+  upload.single('image'), // Handle single file upload with field name 'image'
+  validateEvent, 
+  eventController.createEvent
+);
 
 // @route   GET api/events
 // @desc    Get all public events with optional filters
 // @access  Public
 router.get('/', eventController.getEvents);
+
+// @route   GET api/events/:id
+// @desc    Get event by ID
+// @access  Public
+router.get('/:id', eventController.getEventById);
 
 // @route   GET api/events/dashboard
 // @desc    Get user's created and attending events
@@ -22,7 +43,13 @@ router.get('/dashboard', auth, eventController.getDashboardEvents);
 // @route   PUT api/events/:id
 // @desc    Update an event
 // @access  Private
-router.put('/:id', auth, eventController.updateEvent);
+router.put(
+  '/:id', 
+  auth, 
+  upload.single('image'),
+  validateEvent, 
+  eventController.updateEvent
+);
 
 // @route   DELETE api/events/:id
 // @desc    Delete an event
