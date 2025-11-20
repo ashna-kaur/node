@@ -27,7 +27,7 @@ exports.createEvent = async (req, res) => {
 
     res.json(event);
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).send('Server Error');
   }
 };
@@ -135,7 +135,7 @@ exports.updateEvent = async (req, res) => {
     }
 
     // Make sure user owns event
-    if (event.creator.toString() !== req.user.id) {
+    if (event.creator.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 
@@ -170,7 +170,7 @@ exports.deleteEvent = async (req, res) => {
     }
 
     // Make sure user owns event
-    if (event.creator.toString() !== req.user.id) {
+    if (event.creator.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 

@@ -26,6 +26,7 @@ exports.register = async (req, res) => {
     // Generate verification token
     user.verificationToken = crypto.randomBytes(20).toString('hex');
 
+    user.isVerified = true;
     await user.save();
 
     // Send verification email

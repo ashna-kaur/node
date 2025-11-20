@@ -8,10 +8,10 @@ const { createEventLimiter } = require('../middleware/RateLimiter');
 
 // Import upload middleware (choose one based on your setup)
 // Option 1: Local storage
-// const { upload } = require('../middleware/uploadMiddleware');
+const { upload } = require('../middleware/uploadMiddleware');
 
 // Option 2: Cloudinary
-const { upload } = require('../config/cloudinary');
+// const { upload } = require('../config/cloudinary');
 
 // @route   POST api/events
 // @desc    Create a new event

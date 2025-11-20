@@ -100,7 +100,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin', require('./routes/admin'));
-app.use('/api/reports', require('./routes/reports'));
+// app.use('/api/reports', require('./routes/reports'));
 
 // Serve Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

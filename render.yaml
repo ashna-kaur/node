@@ -1,6 +1,7 @@
 services:
   # Backend API
-  - type: web
+  - runtime: node
+    type: node
     name: eventhub-api
     env: node
     region: frankfurt
