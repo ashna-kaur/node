@@ -14,8 +14,28 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Email:', email);
             console.log('Password:', password);
 
-            // Qui si potrebbe aggiungere la logica per inviare i dati al backend
-            alert('Login tentato con Email: ' + email);
+            // Invia i dati al backend
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Login avvenuto con successo!') {
+                    alert(data.message);
+                    // Reindirizza l'utente o aggiorna l'interfaccia utente
+                    window.location.href = 'index.html'; // Esempio di reindirizzamento
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch((error) => {
+                console.error('Errore:', error);
+                alert('Si è verificato un errore durante il login.');
+            });
         });
     }
 });

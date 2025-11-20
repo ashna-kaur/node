@@ -16,31 +16,28 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Email:', email);
             console.log('Password:', password);
 
-            // Send registration data to the backend
+            // Invia i dati al backend
             fetch('/api/register', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, email, password })
+                body: JSON.stringify({ username, email, password }),
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Registration failed');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                alert('Registration successful!');
-                // Optionally redirect or clear form
-                registerForm.reset();
+                if (data.message === 'Registrazione avvenuta con successo!') {
+                    alert(data.message);
+                    // Reindirizza l'utente alla pagina di login dopo la registrazione
+                    window.location.href = 'login.html'; // Esempio di reindirizzamento
+                } else {
+                    alert(data.message);
+                }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Registration failed. Please try again.');
+            .catch((error) => {
+                console.error('Errore:', error);
+                alert('Si è verificato un errore durante la registrazione.');
             });
-            
-            alert('Registrazione tentata con Username: ' + username + ', Email: ' + email);
         });
     }
 });
