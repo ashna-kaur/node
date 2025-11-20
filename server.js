@@ -9,15 +9,27 @@ const swaggerSpec = require('./config/swagger');
 const app = express();
 const server = require('http').createServer(app);
 const socket = require('./utils/socket');
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+// Connect to MongoDB with optional in-memory fallback
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('Connected to MongoDB');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    if (String(process.env.USE_MEMORY_DB).toLowerCase() === 'true') {
+      const { MongoMemoryServer } = require('mongodb-memory-server');
+      const mongod = await MongoMemoryServer.create();
+      global.__MONGOD = mongod;
+      const uri = mongod.getUri();
+      await mongoose.connect(uri);
+      console.log('Connected to in-memory MongoDB');
+    }
+  }
+};
+
+connectDB();
 
 // Middleware
 app.use(express.json()); // AGGIUNTO: Parse JSON bodies
@@ -70,6 +82,16 @@ const io = socket.getIo();
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
+
+  socket.on('joinUser', (userId) => {
+    if (!userId) return;
+    socket.join(userId.toString());
+  });
+
+  socket.on('leaveUser', (userId) => {
+    if (!userId) return;
+    socket.leave(userId.toString());
+  });
 
   // Join event room for chat
   socket.on('joinEvent', (eventId) => {

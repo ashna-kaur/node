@@ -138,23 +138,23 @@ exports.registerForEvent = async (req, res) => {
     event.attendees.push(req.user.id);
     await event.save();
 
-    res.json({ msg: 'Successfully registered for the event' });
+  res.json({ msg: 'Successfully registered for the event' });
 
-    // Emit notification
-    createAndEmitNotification(req.user.id, `You have successfully registered for ${event.title}`, 'event_registration');
+  // Emit notification
+  createAndEmitNotification(req.user.id, `You have successfully registered for ${event.title}`, 'event_registration');
 
-    // Send confirmation email
-    const user = await User.findById(req.user.id);
+  // Send confirmation email
+  const user = await User.findById(req.user.id);
     const message = `
-      \u003ch1\u003eEvent Registration Confirmation\u003c/h1\u003e
-      \u003cp\u003eDear ${user.username},\u003c/p\u003e
-      \u003cp\u003eYou have successfully registered for the event: \u003cstrong\u003e${event.title}\u003c/strong\u003e.\u003c/p\u003e
-      \u003cp\u003eDetails:\u003c/p\u003e
-      \u003cul\u003e
-        \u003cli\u003e\u003cstrong\u003eDate:\u003c/strong\u003e ${new Date(event.date).toLocaleDateString()}\u003c/li\u003e
-        \u003cli\u003e\u003cstrong\u003eLocation:\u003c/strong\u003e ${event.location}\u003c/li\u003e
-      \u003c/ul\u003e
-      \u003cp\u003eWe look forward to seeing you there!\u003c/p\u003e
+      <h1>Event Registration Confirmation</h1>
+      <p>Dear ${user.username},</p>
+      <p>You have successfully registered for the event: <strong>${event.title}</strong>.</p>
+      <p>Details:</p>
+      <ul>
+        <li><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</li>
+        <li><strong>Location:</strong> ${event.location}</li>
+      </ul>
+      <p>We look forward to seeing you there!</p>
     `;
 
     try {
@@ -165,6 +165,28 @@ exports.registerForEvent = async (req, res) => {
       });
     } catch (emailErr) {
       console.error('Error sending event registration email:', emailErr);
+    }
+
+    const organizer = await User.findById(event.creator);
+    const organizerMessage = `
+      <h1>New Event Registration</h1>
+      <p>${user.username} registered for your event: <strong>${event.title}</strong>.</p>
+      <ul>
+        <li><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</li>
+        <li><strong>Location:</strong> ${event.location}</li>
+      </ul>
+    `;
+
+    createAndEmitNotification(event.creator, `${user.username} registered for ${event.title}`, 'event_registration');
+
+    try {
+      await sendEmail({
+        email: organizer.email,
+        subject: 'EventHub - New Event Registration',
+        message: organizerMessage
+      });
+    } catch (emailErr) {
+      console.error('Error sending organizer notification email:', emailErr);
     }
   } catch (err) {
     console.error(err.message);
