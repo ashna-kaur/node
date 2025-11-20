@@ -10,7 +10,7 @@ Le API protette richiedono un JSON Web Token (JWT) valido nell'header `Authoriza
 
 ## Endpoint: `/api/register`
 
-Registra un nuovo utente nel sistema.
+Registra un nuovo utente nel sistema. Dopo la registrazione, verrà inviata un'email di verifica all'indirizzo fornito.
 
 - **URL**: `/api/register`
 - **Metodo**: `POST`
@@ -18,27 +18,28 @@ Registra un nuovo utente nel sistema.
   ```json
   {
     "username": "string",
-    "email": "string (formato email)",
+    "email": "string (formato email valido)",
     "password": "string (min. 6 caratteri raccomandato)"
   }
   ```
 - **Risposte**:
-  - `201 Created`: Registrazione avvenuta con successo.
+  - `201 Created`: Registrazione avvenuta con successo. Controlla la tua email per verificare l'account.
     ```json
     {
-      "message": "Registrazione avvenuta con successo!",
+      "message": "Registrazione avvenuta con successo! Controlla la tua email per verificare l'account.",
       "user": {
         "id": "number",
         "username": "string",
         "email": "string",
-        "role": "string"
+        "role": "string",
+        "isVerified": "boolean"
       }
     }
     ```
-  - `400 Bad Request`: Campi mancanti.
+  - `400 Bad Request`: Campi mancanti o formato email non valido.
     ```json
     {
-      "message": "Tutti i campi sono obbligatori."
+      "message": "Tutti i campi sono obbligatori." o "Formato email non valido."
     }
     ```
   - `409 Conflict`: L'email è già registrata.
@@ -78,10 +79,10 @@ Autentica un utente e restituisce un token JWT.
       "message": "Email e password sono obbligatori."
     }
     ```
-  - `401 Unauthorized`: Credenziali non valide.
+  - `401 Unauthorized`: Credenziali non valide o account non verificato.
     ```json
     {
-      "message": "Credenziali non valide."
+      "message": "Credenziali non valide." o "Account non verificato. Controlla la tua email per il link di verifica."
     }
     ```
   - `500 Internal Server Error`: Errore del server.
@@ -104,6 +105,42 @@ Un endpoint di esempio che richiede autenticazione.
     ```
   - `401 Unauthorized`: Nessun token fornito.
   - `403 Forbidden`: Token non valido o scaduto.
+
+---
+
+## Endpoint: `/api/verify-email`
+
+Verifica l'account di un utente utilizzando un token di verifica inviato via email.
+
+- **URL**: `/api/verify-email?token=<verification_token>`
+- **Metodo**: `GET`
+- **Parametri della Query**:
+  - `token`: `string` (Il token di verifica univoco ricevuto via email).
+- **Risposte**:
+  - `200 OK`: Account verificato con successo.
+    ```json
+    {
+      "message": "Account verificato con successo! Ora puoi effettuare il login."
+    }
+    ```
+  - `200 OK`: L'account è già stato verificato.
+    ```json
+    {
+      "message": "Il tuo account è già stato verificato."
+    }
+    ```
+  - `400 Bad Request`: Token di verifica mancante.
+    ```json
+    {
+      "message": "Token di verifica mancante."
+    }
+    ```
+  - `404 Not Found`: Token di verifica non valido o scaduto.
+    ```json
+    {
+      "message": "Token di verifica non valido o scaduto."
+    }
+    ```
 
 ---
 
